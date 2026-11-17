@@ -12,15 +12,17 @@ class LoginPage{
     }
 
     async open(){
-        console.log(`Opening base URL:${this.baseURL}`);
-        await this.page.goto(this.baseURL);
-        console.log('Landing Page Succesfully opened');
+        console.log('BASE URL:', this.baseURL);
+
+    await this.page.goto(this.baseURL);
+
+    console.log('Current URL:', this.page.url());
 
     }
     async login(username,password){
         await this.usernameInput.fill(username);
         await this.passwordInput.fill(password);
-        await this.loginButton.click()
+        await this.loginButton.click();
 
 
     }

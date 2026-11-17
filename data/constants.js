@@ -1,8 +1,8 @@
 module.exports = {
     urls: {
-        login: '/',
-        inventory: '/inventory.html',
-        cart:'/cart.html',
+        login: 'https://www.saucedemo.com/',
+        inventory: 'https://www.saucedemo.com/inventory.html',
+        cart:'https://www.saucedemo.com/cart.html',
         checkout2url:'https://www.saucedemo.com/checkout-step-two.html',
         thankYouPageUrl:'https://www.saucedemo.com/checkout-complete.html'
     },

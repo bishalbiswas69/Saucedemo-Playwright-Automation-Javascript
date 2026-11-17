@@ -14,17 +14,23 @@ test.beforeEach(async ({ page }) => {
 
     await loginpage.open();
 
-    // FIX 5: Login before accessing inventory
     await loginpage.login(
         users.standardUser.username,
         users.standardUser.password
     );
+
+    // Verify successful login
+    await expect(page).toHaveURL(/inventory.html/);
 });
 
 test('cart badge updates when adding products', async () => {
+    await inventory.addProductToCart(
+        constants.text.SauceLabsBackPackText
+    );
 
-    inventory.addProductToCart(constants.text.SauceLabsBackPackText);
-    inventory.addProductToCart(constants.text.SauceLabsBikeLightText);
+    await inventory.addProductToCart(
+        constants.text.SauceLabsBikeLightText
+    );
 
     const cartCount = await inventory.getCartCount();
 
@@ -32,8 +38,7 @@ test('cart badge updates when adding products', async () => {
 });
 
 test('products can be sorted by price low to high', async () => {
-
-    await inventory.sortBy(constants.SortOptions.priceLowToHigh);
+    await inventory.sortBy(constants.sortOptions.priceLowToHigh);
 
     const prices = await inventory.getAllProductPrices();
 

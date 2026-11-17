@@ -1,60 +1,115 @@
+
 const { test, expect } = require('@playwright/test');
+
 const { LoginPage } = require('../pages/LoginPage');
 const { Inventory } = require('../pages/Inventory');
-const { cart } = require('../pages/cartpage');
+const { Cart } = require('../pages/cartpage');
 const constants = require('../data/constants');
+const users = require('../data/users');
 
-
-let loginpage;
-
+let loginPage;
 let inventory;
-
-let cart;
-
+let cartPage;
 
 test.beforeEach(async ({ page }) => {
-    loginpage = new LoginPage(page);
+    loginPage = new LoginPage(page);
     inventory = new Inventory(page);
-    await loginpage.open();
-    await loginpage.login(users.standardUser.username, users.standardUser.password);
+    cartPage = new Cart(page);
 
+    await loginPage.open();
+
+    await loginPage.login(
+        users.standardUser.username,
+        users.standardUser.password
+    );
+
+    // Verify successful login
+    await expect(page).toHaveURL(/inventory.html/);
 });
 
 test('added products looking perfectly in cart', async ({ page }) => {
-    inventory.addProductToCart(constants.text.SauceLabsBackPackText);
-    inventory.addProductToCart(constants.text.SauceLabsBikeLightText);
-    await this.cart.goToCart();
-    await expect(page).toHaveURL(Constants.urls.cart)
-    const itemName = await cart.getAllCartNames()
-    expect(itemNames).toEqual([constants.text.SauceLabsBackPackText, constants.text.SauceLabsBikeLightText])
-})
 
-test('product  can be removed from the cart', async ({ page }) => {
-    await this.cart.goToCart();
-    await cart.removeProduct(test.SauceLabsBackPackText);
-    const count = cart.getCartItemCount();
+    await inventory.addProductToCart(
+        constants.text.SauceLabsBackPackText
+    );
+
+    await inventory.addProductToCart(
+        constants.text.SauceLabsBikeLightText
+    );
+
+   await cartPage.goToCart();
+    console.log('URL after clicking cart:', page.url());
+    const itemNames = await cartPage.getAllCartNames();
+
+    expect(itemNames).toEqual([
+        constants.text.SauceLabsBackPackText,
+        constants.text.SauceLabsBikeLightText
+    ]);
+});
+
+
+test('product can be removed from the cart', async ({ page }) => {
+
+    await inventory.addProductToCart(
+        constants.text.SauceLabsBackPackText
+    );
+
+    await inventory.addProductToCart(
+        constants.text.SauceLabsBikeLightText
+    );
+
+    await cartPage.goToCart();
+
+    await cartPage.removeProduct(
+        constants.text.SauceLabsBackPackText
+    );
+
+    const count = await cartPage.getCartItemCount();
+
     expect(count).toBe(1);
-    const remainingNames = await cart.getAllCartNames();
-    expect(remainingNames).toEqual(constants.text.SauceLabsBikeLightText);
-})
 
-test('add a product to the cart and head to checkout and user can proceed with right info', async ({ page }) => {
-    cart.clickOnCheckout();
-    cart.fillInformation(constants.checkoutData.firstName, constants.checkoutData.lastName,constants.checkoutData.postalCode);
-    cart.continueToOverview();
+    const remainingNames = await cartPage.getAllCartNames();
+
+    expect(remainingNames).toEqual([
+        constants.text.SauceLabsBikeLightText
+    ]);
+});
+
+
+test('add a product to the cart and proceed to checkout with correct information', async ({ page }) => {
+
+    await inventory.addProductToCart(
+        constants.text.SauceLabsBackPackText
+    );
+
+    await cartPage.goToCart();
+
+    await cartPage.clickOnCheckout();
+
+    await cartPage.fillInformation(
+        constants.checkoutData.firstName,
+        constants.checkoutData.lastName,
+        constants.checkoutData.postalCode
+    );
+
+    await cartPage.continueToOverview();
+
     await expect(page).toHaveURL(constants.urls.checkout2url);
-    const subtotal= await cart.getSubtotal();
-    const tax = await cart.getTax();
-    const total = await cart.getTotalPrice();
-    expect(total).toBeCloseTo(subtotal + tax,2);
-    cart.clickFinishButton();
-    await expect(page).toHaveURL(constants.urls.thankYouPageUrl);
-    await  expect(cart.getCompleteHeaderButton).toHaveText('Thank you for your order!');
 
+    const subtotal = await cartPage.getSubtotal();
+    const tax = await cartPage.getTax();
+    const total = await cartPage.getTotalPrice();
 
+    expect(total).toBeCloseTo(subtotal + tax, 2);
 
+    await cartPage.clickFinishButton();
 
-})
+    await expect(page).toHaveURL(
+        constants.urls.thankYouPageUrl
+    );
 
+    await expect(cartPage.getCompleteHeader).toHaveText(
+        'Thank you for your order!'
+    );
 
-
+});
